@@ -6,6 +6,16 @@ import signal
 import socket
 import json
 
+# Do not move
+def start_prog():
+  pid = os.fork()
+  if pid == 0:
+    rpdb.set_trace()
+    factor.factor_fibonacci(num=10)
+
+  return pid
+# Do not move
+
 class FakeSocket(object):
   def __init__(self, recv_data=None):
     self.recv_data = recv_data or []
@@ -102,25 +112,16 @@ class TestJsonSocket(unittest.TestCase):
 
     self.assertEquals(expected, sock.sent[0])
 
-
-def start_prog():
-  pid = os.fork()
-  if pid == 0:
-    rpdb.set_trace()
-    factor.factor_fibonacci(num=10)
-
-  return pid
-
 class TestRpdb(unittest.TestCase):
 
   def setUp(self):
     self.child_pid = start_prog()
+    self.conn = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
+    self.conn.connect(rpdb.SOCKET_ADDR)
 
   def tearDown(self):
+    self.conn.close()
     os.kill(self.child_pid, signal.SIGKILL)
 
   def test_setup_works(self):
-    conn = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
-    conn.connect((SOCKET_ADDR))
-
-    conn.close()
+    self.assertTrue(True)
