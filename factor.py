@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+
 import primes
 import fibonacci
+import rpdb
 
 def factor_fibonacci(num=None, max=None):
   factors = []
@@ -22,3 +25,7 @@ def xfactor(num):
     while num % prime == 0:
       yield prime
       num /= prime
+
+if __name__ == '__main__':
+  rpdb.set_trace()
+  factor_fibonacci(num=10)

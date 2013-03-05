@@ -1,7 +1,9 @@
 import unittest
 import os
+import subprocess
 import factor
 import rpdb
+import time
 import signal
 import socket
 import json
@@ -113,15 +115,25 @@ class TestJsonSocket(unittest.TestCase):
     self.assertEquals(expected, sock.sent[0])
 
 class TestRpdb(unittest.TestCase):
+  def connect_socket(self, tries_left=10):
+    try:
+      self.conn = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
+      self.conn.connect(rpdb.SOCKET_ADDR)
+    except Exception:
+      time.sleep(1)
+      if tries_left == 0:
+        raise
+      self.connect_socket(tries_left-1)
 
   def setUp(self):
-    self.child_pid = start_prog()
-    self.conn = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
-    self.conn.connect(rpdb.SOCKET_ADDR)
+    self.child = subprocess.Popen(['./factor.py'])
+    tries_left = 10
+    self.connect_socket()
+    self.jsock = rpdb.JsonSocket(self.conn)
 
   def tearDown(self):
+    self.child.kill()
     self.conn.close()
-    os.kill(self.child_pid, signal.SIGKILL)
 
-  def test_setup_works(self):
-    self.assertTrue(True)
+  def test_first_frame_sent(self):
+    msg = self.jsock.recv_msg()

@@ -3,8 +3,8 @@ import socket
 import json
 
 ADDR_FAMILY = socket.AF_INET
-SOCKET_ADDR = ('localhost', 58000)
-SOCKET_ADDR_LISTEN = ('', 58000)
+SOCKET_ADDR = ('localhost', 59000)
+SOCKET_ADDR_LISTEN = ('', 59000)
 
 class JsonSocket(object):
   def __init__(self, sock):
@@ -49,12 +49,8 @@ class Rpdb(bdb.Bdb):
     self.sock = None
     self.wait_for_client()
 
-  def __del__(self):
-    if self.sock is not None:
-      self.sock.close()
-    self.listening_socket.close()
-
   def wait_for_client(self):
+    print "waiting"
     conn, addr = self.listening_socket.accept()
     self.sock = JsonSocket(conn)
     print addr
