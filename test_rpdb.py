@@ -141,3 +141,31 @@ class TestRpdb(unittest.TestCase):
     self.assertEquals('current_frame', msg['type'])
     self.assertEquals(31, msg['line_no'])
     self.assertIn('factor.py', msg['file'])
+
+  def test_step(self):
+    msg = self.jsock.recv_msg()
+
+    self.jsock.send_msg({'command': 'step'})
+
+    msg = self.jsock.recv_msg()
+    self.assertEquals('current_frame', msg['type'])
+    self.assertEquals(8, msg['line_no'])
+    self.assertIn('factor.py', msg['file'])
+
+  def test_break(self):
+    msg = self.jsock.recv_msg()
+
+    self.jsock.send_msg({
+      'command': 'set_break',
+      'args': {
+        'file': 'primes.py',
+        'line_no': 12,
+        }
+      })
+
+    self.jsock.send_msg({'command': 'continue'})
+
+    msg = self.jsock.recv_msg()
+    self.assertEquals('current_frame', msg['type'])
+    self.assertEquals(12, msg['line_no'])
+    self.assertIn('primes.py', msg['file'])

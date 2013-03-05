@@ -53,8 +53,29 @@ class Rpdb(bdb.Bdb):
     conn, addr = self.listening_socket.accept()
     self.sock = JsonSocket(conn)
 
-  def get_command(self):
-    msg = self.sock.recv_msg()
+  def do_step(self, frame, args):
+    self.set_step()
+    return True
+
+  def do_set_break(self, frame, args):
+    fn = args['file']
+    line_no = args['line_no']
+
+    self.set_break(fn, line_no)
+    return False
+
+  def do_continue(self, frame, args):
+    self.set_continue()
+    return True
+
+  def get_command(self, frame):
+    while True:
+      msg = self.sock.recv_msg()
+
+      command = msg['command']
+      method = getattr(self, 'do_' + command)
+      if method(frame, msg.get('args', {})):
+        return
 
   def user_line(self, frame):
     msg = {
@@ -63,6 +84,7 @@ class Rpdb(bdb.Bdb):
         'line_no': frame.f_lineno,
         }
     self.sock.send_msg(msg)
+    self.get_command(frame)
 
   def user_exception(self, frame, exc_stuff):
     print('+++ exception', exc_stuff)
