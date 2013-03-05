@@ -50,28 +50,19 @@ class Rpdb(bdb.Bdb):
     self.wait_for_client()
 
   def wait_for_client(self):
-    print "waiting"
     conn, addr = self.listening_socket.accept()
     self.sock = JsonSocket(conn)
-    print addr
 
   def get_command(self):
     msg = self.sock.recv_msg()
 
   def user_line(self, frame):
     msg = {
-        'type': 'current_frame'
+        'type': 'current_frame',
+        'file': self.canonic(frame.f_code.co_filename),
+        'line_no': frame.f_lineno,
         }
     self.sock.send_msg(msg)
-    return
-    import linecache
-    name = frame.f_code.co_name
-    if not name: name = '???'
-    fn = self.canonic(frame.f_code.co_filename)
-    line = linecache.getline(fn, frame.f_lineno, frame.f_globals)
-    self.conn.sendall('line,' + fn + ',' + str(frame.f_lineno) + '\r\n')
-    self.get_command()
-    print('+++', fn, frame.f_lineno, name, ':', line.strip())
 
   def user_exception(self, frame, exc_stuff):
     print('+++ exception', exc_stuff)

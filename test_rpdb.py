@@ -137,3 +137,7 @@ class TestRpdb(unittest.TestCase):
 
   def test_first_frame_sent(self):
     msg = self.jsock.recv_msg()
+
+    self.assertEquals('current_frame', msg['type'])
+    self.assertEquals(31, msg['line_no'])
+    self.assertIn('factor.py', msg['file'])
