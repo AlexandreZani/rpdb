@@ -4,6 +4,7 @@ import json
 
 ADDR_FAMILY = socket.AF_INET
 SOCKET_ADDR = ('localhost', 58000)
+SOCKET_ADDR_LISTEN = ('', 58000)
 
 class JsonSocket(object):
   def __init__(self, sock):
@@ -42,7 +43,7 @@ class Rpdb(bdb.Bdb):
 
     self.listening_socket = socket.socket(ADDR_FAMILY, socket.SOCK_STREAM)
     self.listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.listening_socket.bind(SOCKET_ADDR)
+    self.listening_socket.bind(SOCKET_ADDR_LISTEN)
     self.listening_socket.listen(1)
 
     self.sock = None

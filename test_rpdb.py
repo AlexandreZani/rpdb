@@ -121,15 +121,6 @@ class TestRpdb(unittest.TestCase):
 
   def test_setup_works(self):
     conn = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
-    conn.connect(rpdb.SOCKET_ADDR)
+    conn.connect((SOCKET_ADDR))
 
     conn.close()
-
-  def test_frame_on_first_connect(self):
-    conn = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
-    conn.connect(rpdb.SOCKET_ADDR)
-    sock = rpdb.JsonSocket(conn)
-
-    msg = sock.recv_msg()
-
-    self.assertEquals('current_frame', msg['type'])
