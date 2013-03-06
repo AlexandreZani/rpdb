@@ -14,13 +14,19 @@ class JsonSocket(object):
   def recv_msg(self):
     eos = self.data.find('\r\n')
     while eos < 0:
-      self.data += self.sock.recv(1024)
+      chunk = self.sock.recv(1024)
+      if len(chunk) == 0:
+        return None
+      self.data += chunk
       eos = self.data.find('\r\n')
     size = int(self.data[:eos])
 
     self.data = self.data[eos+2:]
     while len(self.data) < size:
-      self.data += self.sock.recv(1024)
+      chunk = self.sock.recv(1024)
+      if len(chunk) == 0:
+        return None
+      self.data += chunk
 
     json_str = self.data[:size]
     self.data = self.data[size:]
@@ -81,6 +87,10 @@ class Rpdb(bdb.Bdb):
     self.sock.send_msg({'type': 'unknown_command'})
     return False
 
+  def do_next(self, frame, args):
+    self.set_next(frame)
+    return True
+
   def get_command(self, frame):
     while True:
       msg = self.sock.recv_msg()
@@ -88,7 +98,7 @@ class Rpdb(bdb.Bdb):
       command = msg['command']
       method = getattr(self, 'do_' + command, self.do_unknown)
       if method(frame, msg.get('args', {})):
-        return
+        break
 
   def user_line(self, frame):
     msg = {

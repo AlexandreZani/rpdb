@@ -211,3 +211,33 @@ class TestRpdb(unittest.TestCase):
     self.assertEquals('current_frame', msg['type'])
     self.assertEquals(8, msg['line_no'])
     self.assertIn('primes.py', msg['file'])
+
+  def test_next(self):
+    msg = self.jsock.recv_msg()
+
+    self.jsock.send_msg({
+      'command': 'set_breaks',
+      'args': {
+        'breaks': [
+          {
+            'file': 'primes.py',
+            'line_no': 8,
+          },
+        ]
+      }
+    })
+
+    self.jsock.send_msg({
+      'command': 'continue'
+    })
+    msg = self.jsock.recv_msg()
+
+    self.jsock.send_msg({
+      'command': 'next'
+    })
+
+    msg = self.jsock.recv_msg()
+
+    self.assertEquals('current_frame', msg['type'])
+    self.assertEquals(9, msg['line_no'])
+    self.assertIn('primes.py', msg['file'])

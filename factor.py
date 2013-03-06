@@ -28,4 +28,4 @@ def xfactor(num):
 
 if __name__ == '__main__':
   rpdb.set_trace()
-  factor_fibonacci(num=10)
+  factor_fibonacci(num=2)
