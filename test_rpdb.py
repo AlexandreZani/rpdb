@@ -25,7 +25,7 @@ class FakeSocket(object):
 
   def recv(self, _):
     if not self.recv_data:
-      return None
+      return ''
 
     return self.recv_data.pop(0)
 
