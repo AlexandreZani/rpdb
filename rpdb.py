@@ -57,23 +57,36 @@ class Rpdb(bdb.Bdb):
     self.set_step()
     return True
 
-  def do_set_break(self, frame, args):
-    fn = args['file']
-    line_no = args['line_no']
+  def do_set_breaks(self, frame, args):
+    for b in args['breaks']:
+      fn = b['file']
+      line_no = b['line_no']
 
-    self.set_break(fn, line_no)
+      self.set_break(fn, line_no)
+    return False
+
+  def do_clear_breaks(self, frame, args):
+    for b in args['breaks']:
+      fn = b['file']
+      line_no = b['line_no']
+
+      self.clear_break(fn, line_no)
     return False
 
   def do_continue(self, frame, args):
     self.set_continue()
     return True
 
+  def do_unknown(self, frame, args):
+    self.sock.send_msg({'type': 'unknown_command'})
+    return False
+
   def get_command(self, frame):
     while True:
       msg = self.sock.recv_msg()
 
       command = msg['command']
-      method = getattr(self, 'do_' + command)
+      method = getattr(self, 'do_' + command, self.do_unknown)
       if method(frame, msg.get('args', {})):
         return
 
