@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import primes
 import fibonacci
 import rpdb
@@ -27,5 +28,14 @@ def xfactor(num):
       num /= prime
 
 if __name__ == '__main__':
-  rpdb.set_trace()
+  listening = True
+  if len(sys.argv) > 1:
+    if sys.argv[1] == 'listening':
+      listening = True
+      socket_addr = ('', 59000)
+    elif sys.argv[1] == 'not_listening':
+      listening = False
+      socket_addr = ('localhost', 57000)
+
+  rpdb.set_trace(listening=listening, socket_addr=socket_addr)
   factor_fibonacci(num=2)

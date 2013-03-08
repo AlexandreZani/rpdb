@@ -126,7 +126,7 @@ class TestRpdb(unittest.TestCase):
       self.connect_socket(tries_left-1)
 
   def setUp(self):
-    self.child = subprocess.Popen(['./factor.py'])
+    self.child = subprocess.Popen(['./factor.py', 'listening'])
     tries_left = 10
     self.connect_socket()
     self.jsock = rpdb.JsonSocket(self.conn)
@@ -139,7 +139,7 @@ class TestRpdb(unittest.TestCase):
     msg = self.jsock.recv_msg()
 
     self.assertEquals('current_frame', msg['type'])
-    self.assertEquals(31, msg['line_no'])
+    self.assertEquals(41, msg['line_no'])
     self.assertIn('factor.py', msg['file'])
 
   def test_step(self):
@@ -149,7 +149,7 @@ class TestRpdb(unittest.TestCase):
 
     msg = self.jsock.recv_msg()
     self.assertEquals('current_frame', msg['type'])
-    self.assertEquals(8, msg['line_no'])
+    self.assertEquals(9, msg['line_no'])
     self.assertIn('factor.py', msg['file'])
 
   def test_break(self):
@@ -241,3 +241,25 @@ class TestRpdb(unittest.TestCase):
     self.assertEquals('current_frame', msg['type'])
     self.assertEquals(9, msg['line_no'])
     self.assertIn('primes.py', msg['file'])
+
+class TestRpdbListening(TestRpdb):
+  @classmethod
+  def setUpClass(cls):
+    cls.listening_socket = socket.socket(rpdb.ADDR_FAMILY, socket.SOCK_STREAM)
+    cls.listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    cls.listening_socket.bind(('', 57000))
+    cls.listening_socket.listen(1)
+
+  @classmethod
+  def tearDownClass(cls):
+    cls.listening_socket.close()
+
+  def setUp(self):
+    self.child = subprocess.Popen(['./factor.py', 'not_listening'])
+
+    self.conn, addr = self.listening_socket.accept()
+    self.jsock = rpdb.JsonSocket(self.conn)
+
+  def tearDown(self):
+    self.child.kill()
+    self.conn.close()
