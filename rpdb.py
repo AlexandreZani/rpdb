@@ -5,6 +5,7 @@ import json
 ADDR_FAMILY = socket.AF_INET
 SOCKET_ADDR = ('localhost', 59000)
 SOCKET_ADDR_LISTEN = ('', 59000)
+LISTENING = True
 
 class JsonSocket(object):
   def __init__(self, sock):
@@ -40,16 +41,25 @@ class JsonSocket(object):
   def close(self):
     self.sock.close()
 
-def set_trace():
-  Rpdb().set_trace()
+def set_trace(socket_family=None, socket_addr=None, listening=None):
+  if listening is None:
+    listening = LISTENING
+  if socket_family is None:
+    socket_family = ADDR_FAMILY
+  if socket_addr is None:
+    if listening:
+      socket_addr = SOCKET_ADDR_LISTEN
+    else:
+      socket_addr = SOCKET_ADDR
+  Rpdb(socket_family, socket_addr, listening).set_trace()
 
 class Rpdb(bdb.Bdb):
-  def __init__(self, skip=None):
+  def __init__(self, socket_family, socket_addr, listening, skip=None):
     bdb.Bdb.__init__(self, skip=skip)
 
-    self.listening_socket = socket.socket(ADDR_FAMILY, socket.SOCK_STREAM)
+    self.listening_socket = socket.socket(socket_family, socket.SOCK_STREAM)
     self.listening_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    self.listening_socket.bind(SOCKET_ADDR_LISTEN)
+    self.listening_socket.bind(socket_addr)
     self.listening_socket.listen(1)
 
     self.sock = None
